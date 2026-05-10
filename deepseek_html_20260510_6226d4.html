@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feliz Día de las Madres, Vanessa 💐</title>
+    <style>
+        :root {
+            --bg: #f9f3e7;
+            --text-dark: #4a3b2f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 30% 20%, #fff5e6, #fce1c5);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- Scène principale --- */
+        #app {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        #stage {
+            position: relative;
+            width: 420px;
+            height: 420px;
+            cursor: default;
+        }
+
+        /* --- Message flottant --- */
+        #message-display {
+            position: relative;
+            width: 340px;
+            min-height: 70px;
+            background: rgba(255, 250, 245, 0.85);
+            backdrop-filter: blur(6px);
+            border-radius: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 1.8rem;
+            font-size: 1.15rem;
+            color: var(--text-dark);
+            text-align: center;
+            line-height: 1.5;
+            transition: opacity 0.6s ease, transform 0.5s ease;
+            border: 1px solid rgba(180, 140, 100, 0.25);
+            letter-spacing: 0.02em;
+        }
+        #message-display.fade-out {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        #message-display.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Conteneur d’une fleur --- */
+        .flower-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .flower-container.active {
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        .flower-container.hidden-flower {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Pétales */
+        .petals-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+        }
+
+        .petal {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform-origin: bottom center;
+            border-radius: 50% 50% 0 0;
+            transition: transform 0.55s cubic-bezier(0.25, 0.1, 0.15, 1.2);
+            will-change: transform;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        /* --- Cercle central (bouton de la fleur) --- */
+        .flower-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 35%, #fde3a0, #dbaa4a);
+            box-shadow: 0 0 12px rgba(200, 150, 50, 0.5);
+            z-index: 2;
+            transition: transform 0.4s ease;
+            pointer-events: none;
+        }
+
+        /* --- Cœur final / miroir --- */
+        .final-mirror {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #d4c5b0);
+            box-shadow: 0 0 25px rgba(200, 160, 100, 0.8), inset 0 0 12px rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #5a3e28;
+            z-index: 20;
+            transition: transform 0.7s cubic-bezier(0.34, 1.4, 0.64, 1);
+            padding: 0.5rem;
+            line-height: 1.3;
+        }
+        .final-mirror.reveal {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* --- Overlay du message "Te amo" --- */
+        #final-message-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+            z-index: 100;
+        }
+        #final-message-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #final-message-overlay .big-heart {
+            background: #fffaf3;
+            padding: 3rem 4rem;
+            border-radius: 4rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 2.2rem;
+            color: #7b3f3f;
+            font-weight: bold;
+            letter-spacing: 0.03em;
+            border: 3px solid #e0b084;
+            animation: heartbeat 1.2s ease-in-out infinite;
+        }
+        @keyframes heartbeat {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.04);
+            }
+            50% {
+                transform: scale(1);
+            }
+            75% {
+                transform: scale(1.04);
+            }
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 480px) {
+            #stage {
+                width: 320px;
+                height: 320px;
+            }
+            #message-display {
+                width: 280px;
+                font-size: 1rem;
+            }
+            #final-message-overlay .big-heart {
+                font-size: 1.5rem;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="stage"></div>
+        <div id="message-display" class="fade-out"></div>
+    </div>
+    <div id="final-message-overlay">
+        <div class="big-heart">
+            💖<br>Te amo.<br>Para siempre.
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // --- Messages pour chaque fleur (de l’extérieur vers l’intérieur) ---
+            const messages = [
+                "Vanessa, gracias por ser la madre que llena de magia nuestro hogar.",
+                "Cada gesto tuyo siembra ternura en nuestros hijos… y en mí.",
+                "Tu amor es la raíz que nos sostiene y la luz que nos guía.",
+                "Eres el corazón que late en el centro de nuestra familia.",
+                "No hay canción de cuna ni cuento que iguale la calma de tu voz.",
+                "Contigo aprendí que el amor de madre es el idioma más puro del universo.",
+                "Vanessa, hoy y siempre, eres el milagro que florece en mi vida. ¡Feliz Día de las Madres, mi amor eterno!"
+            ];
+
+            // Tailles décroissantes (diamètre en px)
+            const sizes = [300, 248, 200, 158, 122, 94, 64];
+            // Nombre de pétales par fleur
+            const petalCounts = [9, 8, 8, 7, 7, 6, 6];
+            // Palette de couleurs (dégradés pour les pétales)
+            const petalColors = [
+                ['#fbd5d5', '#f59595'], // rose pâle
+                ['#fde2c8', '#f7b07a'], // pêche
+                ['#e7dafc', '#c2a5f5'], // lavande
+                ['#fcdbb5', '#f89c4b'], // orange doux
+                ['#c6e7fa', '#6eb5e6'], // bleu ciel
+                ['#fbc2c2', '#e85b5b'], // rouge tendre
+                ['#ffffff', '#f3e1c9'] // blanc nacré
+            ];
+
+            const stage = document.getElementById('stage');
+            const messageDisplay = document.getElementById('message-display');
+            const finalOverlay = document.getElementById('final-message-overlay');
+
+            let currentLevel = 0; // Index de la fleur active (0 à 6)
+            const totalFlowers = sizes.length;
+            const flowerContainers = [];
+            const flowerData = []; // stocke pétales, centre, etc.
+
+            // --- Création des fleurs ---
+            function createFlower(index) {
+                const container = document.createElement('div');
+                container.className = 'flower-container hidden-flower';
+                container.dataset.level = index;
+                // Taille du conteneur
+                const diameter = sizes[index];
+                container.style.width = diameter + 'px';
+                container.style.height = diameter + 'px';
+
+                // Centre jaune/doré
+                const center = document.createElement('div');
+                center.className = 'flower-center';
+                const centerSize = diameter * 0.22;
+                center.style.width = centerSize + 'px';
+                center.style.height = centerSize + 'px';
+                container.appendChild(center);
+
+                // Wrapper des pétales
+                const petalsWrapper = document.createElement('div');
+                petalsWrapper.className = 'petals-wrapper';
+                const numPetals = petalCounts[index];
+                const petalHeight = diameter * 0.42;
+                const petalWidth = diameter * 0.16;
+                const petalBase = [petalColors[index][0], petalColors[index][1]];
+
+                const petals = [];
+                for (let i = 0; i < numPetals; i++) {
+                    const petal = document.createElement('div');
+                    petal.className = 'petal';
+                    petal.style.width = petalWidth + 'px';
+                    petal.style.height = petalHeight + 'px';
+                    petal.style.marginLeft = -petalWidth / 2 + 'px';
+                    petal.style.marginTop = -petalHeight + 'px';
+                    petal.style.background = `linear-gradient(to bottom, ${petalBase[0]}, ${petalBase[1]})`;
+                    // Position fermée : tous pointent vers le haut avec un écart très léger
+                    const closedAngle = (i / numPetals) * 3 - 1.5; // quelques degrés de dispersion
+                    petal.style.transform = `rotate(${closedAngle}deg)`;
+                    petalsWrapper.appendChild(petal);
+                    petals.push(petal);
+                }
+                container.appendChild(petalsWrapper);
+
+                // Si ce n’est pas la dernière fleur, on crée le miroir final à l’intérieur de la dernière
+                if (index === totalFlowers - 1) {
+                    const mirror = document.createElement('div');
+                    mirror.className = 'final-mirror';
+                    mirror.innerHTML =
+                        '✨<br>Vanessa<br>eres el milagro<br>que florece<br>en mi vida ✨';
+                    container.appendChild(mirror);
+                    flowerData.push({ container, petals, center, mirror, open: false, level: index,
+                        petalCount: numPetals, diameter });
+                } else {
+                    flowerData.push({ container, petals, center, mirror: null, open: false, level: index,
+                        petalCount: numPetals, diameter });
+                }
+
+                stage.appendChild(container);
+                flowerContainers.push(container);
+                return container;
+            }
+
+            // Initialiser toutes les fleurs
+            for (let i = 0; i < totalFlowers; i++) {
+                createFlower(i);
+            }
+
+            // Rendre la première fleur visible et active
+            flowerContainers[0].classList.remove('hidden-flower');
+            flowerContainers[0].classList.add('active');
+
+            // --- Affichage du message dans la bulle ---
+            function showMessage(text, callback) {
+                messageDisplay.classList.remove('fade-in');
+                messageDisplay.classList.add('fade-out');
+                setTimeout(() => {
+                    messageDisplay.textContent = text;
+                    messageDisplay.classList.remove('fade-out');
+                    messageDisplay.classList.add('fade-in');
+                    if (callback) setTimeout(callback, 2000);
+                }, 400);
+            }
+
+            // --- Ouverture d’une fleur ---
+            function openFlower(level) {
+                if (level >= totalFlowers) return;
+                const data = flowerData[level];
+                if (data.open) return;
+                data.open = true;
+
+                const numPetals = data.petalCount;
+                const petals = data.petals;
+                // Animer les pétales vers l’état ouvert (répartition uniforme)
+                petals.forEach((petal, i) => {
+                    const openAngle = (i / numPetals) * 360;
+                    petal.style.transform = `rotate(${openAngle}deg)`;
+                });
+
+                // Réduire légèrement le centre pour donner un effet d’éclosion
+                data.center.style.transform = 'translate(-50%, -50%) scale(0.9)';
+                setTimeout(() => {
+                    data.center.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, 350);
+
+                // Afficher le message correspondant
+                showMessage(messages[level], () => {
+                    // Après le message, révéler la fleur suivante si elle existe
+                    if (level + 1 < totalFlowers) {
+                        const nextContainer = flowerContainers[level + 1];
+                        nextContainer.classList.remove('hidden-flower');
+                        // Désactiver la fleur courante, activer la suivante
+                        flowerContainers[level].classList.remove('active');
+                        nextContainer.classList.add('active');
+                        currentLevel = level + 1;
+                    } else {
+                        // Dernière fleur : révéler le miroir et message final
+                        flowerContainers[level].classList.remove('active');
+                        currentLevel = totalFlowers; // plus aucune active
+                        const mirror = flowerData[level].mirror;
+                        if (mirror) {
+                            setTimeout(() => {
+                                mirror.classList.add('reveal');
+                            }, 300);
+                        }
+                        // Message final après un court délai
+                        setTimeout(() => {
+                            messageDisplay.classList.add('fade-out');
+                            setTimeout(() => {
+                                messageDisplay.textContent =
+                                    '💝 Vanessa, gracias por ser la luz de nuestras vidas 💝';
+                                messageDisplay.classList.remove('fade-out');
+                                messageDisplay.classList.add('fade-in');
+                            }, 500);
+                            // Overlay "Te amo" après 2s
+                            setTimeout(() => {
+                                finalOverlay.classList.add('show');
+                            }, 2500);
+                        }, 1500);
+                    }
+                });
+            }
+
+            // --- Gestionnaire de clic global sur le stage ---
+            stage.addEventListener('click', (e) => {
+                if (currentLevel >= totalFlowers) return; // tout est fini
+                const activeContainer = flowerContainers[currentLevel];
+                if (!activeContainer) return;
+                // Vérifier que le clic est bien sur la fleur active (ou ses enfants)
+                const target = e.target;
+                if (activeContainer.contains(target) || target === activeContainer) {
+                    openFlower(currentLevel);
+                }
+            });
+
+            // Petite touche : on peut aussi cliquer sur le message pour fermer l'overlay final
+            finalOverlay.addEventListener('click', () => {
+                finalOverlay.classList.remove('show');
+            });
+
+            // Message d’invitation initial
+            setTimeout(() => {
+                showMessage('🌷 Toca la flor más grande para comenzar... 🌷');
+            }, 600);
+        })();
+    </script>
+</body>
+</html>
